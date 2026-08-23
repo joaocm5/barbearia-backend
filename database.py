@@ -47,7 +47,7 @@ def criar_tabelas():
     #NOT NULL — campo obrigatório. Não dá para gravar um agendamento sem data.
     #DEFAULT 'agendado' — todo agendamento novo já nasce com esse status, sem você precisar informar. Depois o Marcelo muda para concluído, cancelado ou não compareceu.
     #IF NOT EXISTS — pode rodar esse arquivo dez vezes que ele não apaga nada nem dá erro.
-    
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS agendamentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,5 +64,36 @@ def criar_tabelas():
     conexao.close()
     print("Tabelas criadas com sucesso")
 
+# ferramenta do Flask que transforma a senha em hash
+from werkzeug.security import generate_password_hash
+
+
+# CRIA O USUARIO INICIAL - o funcionario que vai acessar o sistema
+def criar_usuario_inicial():
+    conexao = conectar()
+
+    email = "admin@barbearia.com"
+    senha = "123456"
+
+    # verifica se ja existe, para nao duplicar ao rodar de novo
+    existente = conexao.execute(
+        "SELECT id FROM usuarios WHERE email = ?", (email,)
+    ).fetchone()
+
+    if existente is None:
+        conexao.execute(
+            "INSERT INTO usuarios (email, senha_hash) VALUES (?, ?)",
+            # NUNCA guardamos a senha em texto puro, so o hash dela
+            (email, generate_password_hash(senha))
+        )
+        conexao.commit()
+        print(f"Usuario criado: {email} / senha: {senha}")
+    else:
+        print("Usuario ja existe")
+
+    conexao.close()
+
+
 if __name__ == "__main__":
     criar_tabelas()
+    criar_usuario_inicial()
