@@ -26,11 +26,14 @@ def criar_tabelas():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,  
             email TEXT UNIQUE NOT NULL,
             senha_hash TEXT NOT NULL
         )
     """)
+
+    #id INTEGER PRIMARY KEY AUTOINCREMENT — toda linha ganha um número único, gerado sozinho. É como cada registro é identificado. Cliente 1, cliente 2, e assim por diante.
+    #cliente_id + FOREIGN KEY — essa é a parte mais importante. O agendamento não guarda o nome do cliente; guarda o número dele.
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS clientes (
@@ -41,6 +44,10 @@ def criar_tabelas():
         )
     """)
 
+    #NOT NULL — campo obrigatório. Não dá para gravar um agendamento sem data.
+    #DEFAULT 'agendado' — todo agendamento novo já nasce com esse status, sem você precisar informar. Depois o Marcelo muda para concluído, cancelado ou não compareceu.
+    #IF NOT EXISTS — pode rodar esse arquivo dez vezes que ele não apaga nada nem dá erro.
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS agendamentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
