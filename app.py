@@ -1,7 +1,8 @@
 # ==========================================================
 # IMPORTS
 # ==========================================================
-
+# requests permite que o backend faca chamadas HTTP para outros servicos
+import requests
 # Flask   = cria o servidor web
 # request = le os dados que chegam do frontend
 # jsonify = converte a resposta para JSON
@@ -44,6 +45,10 @@ app = Flask(__name__)
 # Em um sistema real esta chave viria de uma variavel de ambiente,
 # nunca escrita no codigo que vai para o GitHub.
 app.secret_key = "chave-secreta-da-barbearia-vintage"
+
+# endereco do webhook do n8n que dispara o email de confirmacao
+# durante o desenvolvimento usamos a URL de teste (webhook-test)
+URL_N8N = "http://localhost:5678/webhook-test/novo-agendamento"
 
 # ----------------------------------------------------------
 # PROTECAO DAS ROTAS
@@ -187,22 +192,45 @@ def listar_agendamentos():
 
 
 # CRIAR AGENDAMENTO - vincula um cliente a uma data, horario e servico
+# CRIAR AGENDAMENTO - grava no banco e avisa o n8n para enviar o email
 @app.route("/agendamentos", methods=["POST"])
 @login_obrigatorio
 def criar_agendamento():
-    dados = request.get_json()          # le o JSON enviado pelo frontend
+    dados = request.get_json()
     conexao = conectar()
 
     cursor = conexao.execute(
         "INSERT INTO agendamentos (cliente_id, data, horario, servico, status) VALUES (?, ?, ?, ?, ?)",
-        # se o status nao vier, assume "agendado" como padrao
         (dados["cliente_id"], dados["data"], dados["horario"],
          dados["servico"], dados.get("status", "agendado"))
     )
+    conexao.commit()
+    novo_id = cursor.lastrowid
 
-    conexao.commit()                    # grava de verdade no banco
-    novo_id = cursor.lastrowid          # id gerado pelo banco
+    # busca o agendamento recem-criado ja com nome e email do cliente,
+    # porque o frontend so enviou o cliente_id e o n8n precisa dos dados completos
+    agendamento = conexao.execute("""
+        SELECT
+            agendamentos.id,
+            agendamentos.data,
+            agendamentos.horario,
+            agendamentos.servico,
+            agendamentos.status,
+            clientes.nome AS cliente_nome,
+            clientes.email AS cliente_email
+        FROM agendamentos
+        JOIN clientes ON clientes.id = agendamentos.cliente_id
+        WHERE agendamentos.id = ?
+    """, (novo_id,)).fetchone()
     conexao.close()
+
+    # avisa o n8n, que cuida de montar e enviar o email ao cliente
+    # o try/except garante que uma falha no n8n NAO impeca o agendamento:
+    # o compromisso ja esta salvo no banco, o email e consequencia
+    try:
+        requests.post(URL_N8N, json=dict(agendamento), timeout=5)
+    except Exception as erro:
+        print(f"Nao foi possivel avisar o n8n: {erro}")
 
     return jsonify({"id": novo_id, "mensagem": "agendamento criado"}), 201
 
