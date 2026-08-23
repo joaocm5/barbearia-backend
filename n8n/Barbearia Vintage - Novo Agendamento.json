@@ -1,0 +1,97 @@
+{
+  "name": "Barbearia Vintage - Novo Agendamento",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "novo-agendamento",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "43f2f17b-fa77-4218-be75-1fa48e8dbccf",
+      "name": "Webhook",
+      "webhookId": "8cfeaae8-0f80-4cda-8f96-52ca6b4bc360"
+    },
+    {
+      "parameters": {
+        "jsCode": "// os dados enviados pelo Flask chegam dentro de \"body\"\nconst dados = $input.first().json.body;\n\n// converte a data de 2026-08-25 para 25/08/2026 (formato brasileiro)\nconst [ano, mes, dia] = dados.data.split(\"-\");\nconst dataFormatada = `${dia}/${mes}/${ano}`;\n\n// monta o assunto do email\nconst assunto = \"Agendamento confirmado - Barbearia Vintage\";\n\n// monta o corpo do email com as informacoes do agendamento\nconst mensagem = `Ola ${dados.cliente_nome},\n\nSeu agendamento foi registrado com sucesso.\n\nServico: ${dados.servico}\nData: ${dataFormatada}\nHorario: ${dados.horario}\nStatus: ${dados.status}\n\nAte breve!\nBarbearia Vintage`;\n\n// devolve os campos prontos para o proximo no (o de email) usar\nreturn [{\n  json: {\n    email: dados.cliente_email,\n    nome: dados.cliente_nome,\n    assunto: assunto,\n    mensagem: mensagem\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "78393c46-e6d7-4f86-b06f-af1a12ca7c77",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fromEmail": "jcastromartins@icloud.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.assunto }}",
+        "emailFormat": "text",
+        "text": "={{ $json.mensagem }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "3bead0ed-7a68-40b9-a6ab-9eea1cf4cd45",
+      "name": "Send an Email",
+      "webhookId": "4b3a2f05-518f-49d6-b272-a996e37de6d6",
+      "credentials": {
+        "smtp": {
+          "id": "BA9dUQGdrxvxPlV4",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "dc3be5b9-2dbc-4be3-b1b8-2539c1be657a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aed6831f377b563c4498c976db7340707ac5d9e57f57584996cd8ccf043d59b3"
+  },
+  "nodeGroups": [],
+  "id": "k4c8Ozdo8exPHNB0",
+  "tags": []
+}

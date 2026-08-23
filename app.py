@@ -12,6 +12,9 @@ import requests
 #           a pessoa sem precisar pedir a senha de novo toda hora.
 from flask import Flask, request, jsonify, session
 
+# CORS permite que o frontend (porta 5500) chame o backend (porta 5000)
+from flask_cors import CORS
+
 # check_password_hash compara a senha digitada com o hash guardado no banco.
 # O sistema nunca sabe qual e a senha - ele so consegue reconhecer
 # quando a senha certa e digitada, porque o hash gerado bate com o salvo.
@@ -29,6 +32,9 @@ from database import conectar
 # cria o aplicativo
 app = Flask(__name__)
 
+# autoriza o frontend a chamar esta API
+# supports_credentials permite que o cookie de sessao viaje junto
+CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5500"])
 
 # ==========================================================
 # CHAVE SECRETA
@@ -46,9 +52,9 @@ app = Flask(__name__)
 # nunca escrita no codigo que vai para o GitHub.
 app.secret_key = "chave-secreta-da-barbearia-vintage"
 
-# endereco do webhook do n8n que dispara o email de confirmacao
-# durante o desenvolvimento usamos a URL de teste (webhook-test)
-URL_N8N = "http://localhost:5678/webhook-test/novo-agendamento"
+# URL de producao: o workflow publicado escuta permanentemente,
+# sem precisar clicar em "Execute workflow" antes de cada agendamento
+URL_N8N = "http://localhost:5678/webhook/novo-agendamento"
 
 # ----------------------------------------------------------
 # PROTECAO DAS ROTAS
