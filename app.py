@@ -205,6 +205,7 @@ def listar_agendamentos():
 
 
 
+
 # CRIAR AGENDAMENTO - grava no banco e avisa o n8n para enviar o email
 @app.route("/agendamentos", methods=["POST"])
 @login_obrigatorio
