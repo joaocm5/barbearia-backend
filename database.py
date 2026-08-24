@@ -73,12 +73,11 @@ from werkzeug.security import generate_password_hash
 
 # CRIA O USUARIO INICIAL - o funcionario que vai acessar o sistema
 def criar_usuario_inicial():
+    # email e senha do funcionario inicial vem do .env
     email = os.getenv("ADMIN_EMAIL")
     senha = os.getenv("ADMIN_SENHA")
     conexao = conectar()
 
-    email = "admin@barbearia.com"
-    senha = "123456"
 
     # verifica se ja existe, para nao duplicar ao rodar de novo
     existente = conexao.execute(

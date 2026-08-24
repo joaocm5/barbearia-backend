@@ -45,29 +45,25 @@ app = Flask(__name__)
 # supports_credentials permite que o cookie de sessao viaje junto
 
 # ==========================================================
-# CHAVE SECRETA
+# CONFIGURACAO (vem do .env, nunca do codigo versionado)
 # ==========================================================
 
-# O Flask ASSINA o cookie de sessao usando esta chave.
-# Assinar nao e o mesmo que esconder: o conteudo do cookie e legivel,
-# mas vem com uma "impressao digital" gerada a partir da chave.
-#
-# Se alguem editar o cookie a mao para dizer "sou o usuario 1",
-# a impressao digital nao bate e o Flask descarta a sessao inteira.
-# Como so o servidor conhece a chave, ninguem consegue forjar um cookie valido.
-#
-# Em um sistema real esta chave viria de uma variavel de ambiente,
-# nunca escrita no codigo que vai para o GitHub.
-
-# URL de producao: o workflow publicado escuta permanentemente,
-# sem precisar clicar em "Execute workflow" antes de cada agendamento
-# segredos e configuracoes vem do .env, nunca do codigo versionado
+# O Flask ASSINA o cookie de sessao com esta chave.
+# Assinar nao e esconder: o conteudo do cookie e legivel, mas vem com
+# uma "impressao digital" gerada a partir da chave. Se alguem editar o
+# cookie a mao para dizer "sou o usuario 1", a assinatura nao bate e o
+# Flask descarta a sessao. Como so o servidor conhece a chave, nao da
+# para forjar um cookie valido.
 app.secret_key = os.getenv("SECRET_KEY")
 
-# endereco do webhook de producao do n8n
+# Webhook de producao do n8n. O workflow publicado escuta permanentemente,
+# sem precisar clicar em "Execute workflow" antes de cada agendamento.
 URL_N8N = os.getenv("N8N_WEBHOOK_URL")
 
-# origem do frontend autorizada a chamar esta API
+# Origem do frontend autorizada a chamar esta API.
+# Autorizamos um endereco especifico, e nao "*": como a autenticacao usa
+# cookie de sessao, liberar qualquer origem permitiria que outro site
+# fizesse requisicoes autenticadas em nome de um funcionario logado.
 CORS(app, supports_credentials=True, origins=[os.getenv("CORS_ORIGIN")])
 
 # ----------------------------------------------------------

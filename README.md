@@ -26,17 +26,19 @@ acontece no banco.
 ## Como rodar
 
 ```bash
-pip install flask flask-cors requests
+pip install flask flask-cors requests python-dotenv
+```
 
+Copie `.env.example` para `.env` e preencha os valores antes de rodar — chave de
+sessão, endereço do webhook do n8n, origem autorizada no CORS e o login inicial.
+
+```bash
 python database.py     # cria as tabelas e o usuário inicial
 python app.py          # sobe a API em http://127.0.0.1:5000
 ```
 
-Usuário criado por padrão:
-
-```
-admin@barbearia.com / 123456
-```
+O usuário inicial é criado a partir de `ADMIN_EMAIL` e `ADMIN_SENHA` definidos
+no `.env`.
 
 O frontend está em outro repositório: [barbearia-frontend](https://github.com/joaocm5/barbearia-frontend)
 
@@ -47,7 +49,9 @@ O frontend está em outro repositório: [barbearia-frontend](https://github.com/
 ```
 app.py            rotas da API e regras de negócio
 database.py       conexão, criação das tabelas e usuário inicial
+.env.example      modelo das variáveis de ambiente necessárias
 n8n/              workflow da automação, exportado em JSON
+.env              valores reais (fora do versionamento)
 barbearia.db      banco (gerado ao rodar database.py, fora do versionamento)
 ```
 
@@ -114,7 +118,8 @@ Para rodar a automação:
 npx n8n     # sobe o editor em http://localhost:5678
 ```
 
-Importe o arquivo de `n8n/`, configure a credencial SMTP e publique o workflow.
+Importe o arquivo de `n8n/`, configure a credencial SMTP com os valores do
+`.env` e publique o workflow.
 
 ---
 
@@ -125,6 +130,7 @@ Importe o arquivo de `n8n/`, configure a credencial SMTP e publique o workflow.
 - Rotas protegidas por um decorador único, evitando esquecer a verificação
 - CORS restrito à origem do frontend, não liberado com `*`
 - Mensagem de erro genérica no login, sem revelar se o e-mail existe
+- Segredos e configurações em variáveis de ambiente, fora do código versionado
 
 ---
 
@@ -132,7 +138,6 @@ Importe o arquivo de `n8n/`, configure a credencial SMTP e publique o workflow.
 
 Decisões de escopo tomadas em função do prazo de 48 horas:
 
-- `secret_key` e credenciais estão no código; em produção viriam de variáveis de ambiente
 - Não há validação de conflito de horário — dois agendamentos podem ocupar o mesmo horário
 - Não há paginação na listagem da agenda
 - Cadastro de novos funcionários é feito diretamente no banco, sem tela própria
