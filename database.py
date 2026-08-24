@@ -12,7 +12,10 @@
 #conexao.cursor() — o cursor é o funcionário que mexe nas gavetas.
 #cursor.execute("...") — você entrega a ordem para o funcionário. O texto dentro dos parênteses é a ordem escrita em SQL. Nesse caso: "crie uma gaveta chamada clientes com essas divisórias".
 #conexao.commit() (o do SQLite) — grava os dados no banco.
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 import sqlite3
 
 def conectar():
@@ -70,6 +73,8 @@ from werkzeug.security import generate_password_hash
 
 # CRIA O USUARIO INICIAL - o funcionario que vai acessar o sistema
 def criar_usuario_inicial():
+    email = os.getenv("ADMIN_EMAIL")
+    senha = os.getenv("ADMIN_SENHA")
     conexao = conectar()
 
     email = "admin@barbearia.com"

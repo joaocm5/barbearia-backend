@@ -1,6 +1,15 @@
 # ==========================================================
 # IMPORTS
 # ==========================================================
+# os = acesso as variaveis de ambiente do sistema
+import os
+
+# load_dotenv le o arquivo .env e carrega as variaveis
+from dotenv import load_dotenv
+
+# precisa ser chamado antes de qualquer os.getenv
+load_dotenv()
+
 # requests permite que o backend faca chamadas HTTP para outros servicos
 import requests
 # Flask   = cria o servidor web
@@ -34,7 +43,6 @@ app = Flask(__name__)
 
 # autoriza o frontend a chamar esta API
 # supports_credentials permite que o cookie de sessao viaje junto
-CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5500"])
 
 # ==========================================================
 # CHAVE SECRETA
@@ -50,11 +58,17 @@ CORS(app, supports_credentials=True, origins=["http://127.0.0.1:5500"])
 #
 # Em um sistema real esta chave viria de uma variavel de ambiente,
 # nunca escrita no codigo que vai para o GitHub.
-app.secret_key = "chave-secreta-da-barbearia-vintage"
 
 # URL de producao: o workflow publicado escuta permanentemente,
 # sem precisar clicar em "Execute workflow" antes de cada agendamento
-URL_N8N = "http://localhost:5678/webhook/novo-agendamento"
+# segredos e configuracoes vem do .env, nunca do codigo versionado
+app.secret_key = os.getenv("SECRET_KEY")
+
+# endereco do webhook de producao do n8n
+URL_N8N = os.getenv("N8N_WEBHOOK_URL")
+
+# origem do frontend autorizada a chamar esta API
+CORS(app, supports_credentials=True, origins=[os.getenv("CORS_ORIGIN")])
 
 # ----------------------------------------------------------
 # PROTECAO DAS ROTAS
