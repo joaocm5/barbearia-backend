@@ -41,9 +41,6 @@ from database import conectar
 # cria o aplicativo
 app = Flask(__name__)
 
-# autoriza o frontend a chamar esta API
-# supports_credentials permite que o cookie de sessao viaje junto
-
 # ==========================================================
 # CONFIGURACAO (vem do .env, nunca do codigo versionado)
 # ==========================================================
@@ -207,7 +204,7 @@ def listar_agendamentos():
     return jsonify([dict(linha) for linha in linhas])
 
 
-# CRIAR AGENDAMENTO - vincula um cliente a uma data, horario e servico
+
 # CRIAR AGENDAMENTO - grava no banco e avisa o n8n para enviar o email
 @app.route("/agendamentos", methods=["POST"])
 @login_obrigatorio
